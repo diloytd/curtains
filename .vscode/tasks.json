@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "${workspaceFolder}",
+      "detail": "Запуск Vite (приложение @curtans/web)",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Local:\\s+http|ready in \\d+ ms)"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "npm: test",
+      "type": "npm",
+      "script": "test",
+      "path": "${workspaceFolder}",
+      "detail": "Vitest во всех workspace (watch)",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "group": "test"
+    },
+    {
+      "label": "npm: test:run",
+      "type": "npm",
+      "script": "test:run",
+      "path": "${workspaceFolder}",
+      "detail": "Vitest один прогон (CI)",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    }
+  ]
+}
