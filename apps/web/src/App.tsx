@@ -1,9 +1,9 @@
 import { Box, Container, CssBaseline, GlobalStyles, Stack, Typography } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
+import type { CartItem } from "@curtans/core";
 import { useCallback, useState } from "react";
 import { CalculatorForm } from "./components/CalculatorForm";
 import { Cart } from "./components/Cart";
-import type { CartItem } from "./lib/types";
 import { appTheme } from "./theme";
 
 function createId() {

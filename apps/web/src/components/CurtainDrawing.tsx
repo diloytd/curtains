@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Box, Stack } from "@mui/material";
-import type { CurtainType } from "../lib/types";
+import type { CurtainType } from "@curtans/core";
 
 // ── Technical schema constants ───────────────────────────────────────────────
 const LOGICAL_W = 400;

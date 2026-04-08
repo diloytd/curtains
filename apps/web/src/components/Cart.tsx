@@ -10,7 +10,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import type { CartItem, CurtainType } from "../lib/types";
+import type { CartItem, CurtainType } from "@curtans/core";
 
 const TYPE_LABELS: Record<CurtainType, string> = {
   straight: "Прямые",

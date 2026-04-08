@@ -1,7 +1,7 @@
+import { PRICES } from "@curtans/core";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { PRICES } from "../lib/constants";
 import { renderWithTheme } from "../test/renderWithTheme";
 import { CalculatorForm } from "./CalculatorForm";
 

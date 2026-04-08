@@ -10,10 +10,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import type { CartItem, CurtainType } from "@curtans/core";
+import { calculateCosts, PRICES } from "@curtans/core";
 import { useMemo, useState } from "react";
-import { calculateCosts } from "../lib/calculations";
-import { PRICES } from "../lib/constants";
-import type { CartItem, CurtainType } from "../lib/types";
 import { CurtainDrawing } from "./CurtainDrawing";
 
 const CURTAIN_LABELS: Record<CurtainType, string> = {
