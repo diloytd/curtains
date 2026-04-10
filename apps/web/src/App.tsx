@@ -26,27 +26,91 @@ export default function App() {
       <CssBaseline />
       <GlobalStyles
         styles={{
+          "html, body, #root": {
+            margin: 0,
+            minHeight: "100%",
+            maxWidth: "100%",
+          },
+          /* lg+: один экран без прокрутки страницы; до lg — вертикальный скролл страницы разрешён */
+          "@media screen and (min-width: 1200px)": {
+            "html, body": {
+              height: "100%",
+              overflow: "hidden",
+            },
+            "#root": {
+              height: "100%",
+              overflow: "visible",
+            },
+          },
           "@media print": {
+            "html, body": { overflow: "visible", height: "auto" },
+            "#root": { height: "auto", overflow: "visible" },
             ".no-print": { display: "none !important" },
           },
         }}
       />
       <Box
         sx={{
-          minHeight: "100vh",
+          minHeight: "100dvh",
+          height: { lg: "100dvh" },
+          maxHeight: { lg: "100dvh" },
           display: "flex",
           flexDirection: "column",
+          /* visible, иначе вместе с Container/Stack обрезаются подписи полей на lg */
+          overflow: { lg: "visible" },
         }}
       >
-        <Container maxWidth="lg" sx={{ py: 3, flex: 1 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }} className="no-print">
+        <Container
+          maxWidth="lg"
+          sx={{
+            py: 2,
+            px: { xs: 2, sm: 3 },
+            flex: { lg: 1 },
+            minHeight: { lg: 0 },
+            width: "100%",
+            maxWidth: "100%",
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            overflow: { lg: "visible" },
+          }}
+        >
+          <Typography variant="h5" component="h1" className="no-print" sx={{ mb: 1, flexShrink: 0 }}>
             Калькулятор штор
           </Typography>
-          <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems="flex-start">
-            <Box sx={{ flex: 1, minWidth: 0 }} className="no-print">
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            alignItems="stretch"
+            sx={{
+              flex: { lg: 1 },
+              minHeight: { lg: 0 },
+              /* не hidden — иначе обрезаются плавающие подписи Outlined у полей */
+              overflow: { lg: "visible" },
+            }}
+          >
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                minHeight: { lg: 0 },
+                display: "flex",
+                flexDirection: "column",
+                overflow: { lg: "visible" },
+              }}
+              className="no-print"
+            >
               <CalculatorForm onAddToCart={handleAdd} />
             </Box>
-            <Box sx={{ width: { xs: "100%", md: 400 }, flexShrink: 0 }}>
+            <Box
+              sx={{
+                width: { xs: "100%", md: 360 },
+                flexShrink: 0,
+                minHeight: { lg: 0 },
+                maxHeight: { lg: "100%" },
+                overflow: "auto",
+              }}
+            >
               <Cart items={items} onRemove={handleRemove} />
             </Box>
           </Stack>
@@ -61,7 +125,7 @@ export default function App() {
             bgcolor: "background.paper",
           }}
         >
-          <Container maxWidth="lg" sx={{ py: 0.75 }}>
+          <Container maxWidth="lg" sx={{ py: 0.5 }}>
             <Typography variant="caption" color="text.secondary" component="p" sx={{ m: 0, lineHeight: 1.2 }}>
               Калькулятор штор · {new Date().getFullYear()}
             </Typography>

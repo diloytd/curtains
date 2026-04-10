@@ -2,6 +2,9 @@ import { useEffect, useRef } from "react";
 import { Box, Stack } from "@mui/material";
 import type { CurtainType } from "@curtans/core";
 
+/** При min-width 1200px — схема и эскиз в ряд; иначе столбик (планшет, мобилка). */
+const HORIZONTAL_DRAWINGS_MQ = "(min-width: 1200px)";
+
 // ── Technical schema constants ───────────────────────────────────────────────
 const LOGICAL_W = 400;
 const LOGICAL_H = 300;
@@ -13,6 +16,16 @@ const CORNICE_Y = 40;
 // ── Sketch canvas constants ───────────────────────────────────────────────────
 const SKETCH_W = 400;
 const SKETCH_H = 420;
+
+/** Зазор между двумя canvas (spacing 1.5 ≈ 12px). */
+const STACK_GAP_PX = 12;
+/** Вертикальная стопка: суммарное отношение высоты к ширине одного canvas. */
+const CANVAS_STACK_ASPECT = LOGICAL_H / LOGICAL_W + SKETCH_H / SKETCH_W;
+/** Эскиз выше схемы — в ряд ограничиваем по высоте эскиза. */
+const SKETCH_H_PER_W = SKETCH_H / SKETCH_W;
+const MIN_DISPLAY_W = 220;
+const SAFE_W_NO_LAYOUT_VERT = 420;
+const SAFE_W_NO_LAYOUT_HORIZ = 380;
 
 export interface CurtainDrawingProps {
   width: number;
@@ -608,9 +621,32 @@ export function CurtainDrawing({
     if (!techCanvas || !sketchCanvas || !container) return;
 
     const paint = () => {
+      const horizontal =
+        typeof window.matchMedia === "function"
+          ? window.matchMedia(HORIZONTAL_DRAWINGS_MQ).matches
+          : false;
       const rect = container.getBoundingClientRect();
       const dpr = window.devicePixelRatio ?? 1;
-      const displayW = Math.max(200, Math.min(rect.width || LOGICAL_W, LOGICAL_W));
+      const rw = Math.max(0, rect.width);
+      const rh = Math.max(0, rect.height);
+
+      let displayW: number;
+      if (horizontal) {
+        const maxFromWidth = Math.max(0, (rw - STACK_GAP_PX) / 2);
+        const maxFromHeight = rh > 0 ? rh / SKETCH_H_PER_W : 0;
+        const safeW = Math.min(maxFromWidth, SAFE_W_NO_LAYOUT_HORIZ);
+        displayW = Math.floor(
+          Math.max(MIN_DISPLAY_W, Math.min(maxFromWidth, maxFromHeight > 0 ? maxFromHeight : safeW)),
+        );
+      } else {
+        const maxFromWidth = rw;
+        const heightBudget = Math.max(0, rh - STACK_GAP_PX);
+        const maxFromHeight = heightBudget > 0 ? heightBudget / CANVAS_STACK_ASPECT : 0;
+        const safeWWhenNoHeight = Math.min(maxFromWidth, SAFE_W_NO_LAYOUT_VERT);
+        displayW = Math.floor(
+          Math.max(MIN_DISPLAY_W, Math.min(maxFromWidth, maxFromHeight > 0 ? maxFromHeight : safeWWhenNoHeight)),
+        );
+      }
 
       // Technical canvas
       const techDisplayH = displayW * (LOGICAL_H / LOGICAL_W);
@@ -646,10 +682,27 @@ export function CurtainDrawing({
     const ro = new ResizeObserver(() => paint());
     ro.observe(container);
     window.addEventListener("resize", paint);
+    let mq: MediaQueryList | null = null;
+    const handleMq = () => paint();
+    if (typeof window.matchMedia === "function") {
+      mq = window.matchMedia(HORIZONTAL_DRAWINGS_MQ);
+      if (typeof mq.addEventListener === "function") {
+        mq.addEventListener("change", handleMq);
+      } else {
+        mq.addListener(handleMq);
+      }
+    }
 
     return () => {
       ro.disconnect();
       window.removeEventListener("resize", paint);
+      if (mq) {
+        if (typeof mq.removeEventListener === "function") {
+          mq.removeEventListener("change", handleMq);
+        } else {
+          mq.removeListener(handleMq);
+        }
+      }
     };
   }, [width, height, foldRatio, curtainType]);
 
@@ -661,17 +714,37 @@ export function CurtainDrawing({
   } as const;
 
   return (
-    <Stack
+    <Box
       ref={containerRef}
-      spacing={1.5}
-      sx={{ width: "100%", maxWidth: LOGICAL_W, mx: "auto" }}
+      sx={{
+        position: "absolute",
+        inset: 0,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
-      <Box sx={boxSx}>
-        <canvas ref={techRef} aria-label="Схема шторы, вид спереди" />
-      </Box>
-      <Box sx={{ ...boxSx, bgcolor: "#faf8f3", border: "1px solid #d8d0c4" }}>
-        <canvas ref={sketchRef} aria-label="Карандашный эскиз шторы" />
-      </Box>
-    </Stack>
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        spacing={1.5}
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          minHeight: 0,
+          maxHeight: "100%",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box sx={{ ...boxSx, flexShrink: 0 }}>
+          <canvas ref={techRef} aria-label="Схема шторы, вид спереди" />
+        </Box>
+        <Box sx={{ ...boxSx, bgcolor: "#faf8f3", border: "1px solid #d8d0c4", flexShrink: 0 }}>
+          <canvas ref={sketchRef} aria-label="Карандашный эскиз шторы" />
+        </Box>
+      </Stack>
+    </Box>
   );
 }
