@@ -7,6 +7,9 @@
     "dev": "npm run dev -w @curtans/web",
     "build": "npm run build -w @curtans/web",
     "preview": "npm run preview -w @curtans/web",
+    "dev:karniz": "npm run dev -w @curtans/karniz-mirror",
+    "build:karniz": "npm run build -w @curtans/karniz-mirror",
+    "preview:karniz": "npm run preview -w @curtans/karniz-mirror",
     "test": "npm run test --workspaces --if-present",
     "test:run": "npm run test:run --workspaces --if-present"
   }
