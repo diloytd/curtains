@@ -723,7 +723,8 @@ export function CurtainDrawing({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
+        /* верх модальной колонки — под кнопкой «В корзину», не по центру пустого поля */
+        justifyContent: "flex-start",
       }}
     >
       <Stack
@@ -735,7 +736,7 @@ export function CurtainDrawing({
           minHeight: 0,
           maxHeight: "100%",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: { xs: "flex-start", lg: "center" },
         }}
       >
         <Box sx={{ ...boxSx, flexShrink: 0 }}>
