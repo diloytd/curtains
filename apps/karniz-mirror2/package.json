@@ -1,0 +1,29 @@
+{
+  "name": "@curtans/karniz-mirror2",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "mirror:fetch": "node ./scripts/fetch-mirror.mjs",
+    "media:sync": "node ./scripts/sync-page-media.mjs"
+  },
+  "dependencies": {
+    "@curtans/core": "*",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.0"
+  }
+}

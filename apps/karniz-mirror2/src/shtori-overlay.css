@@ -1,0 +1,41 @@
+/* Сортировка + кнопка калькулятора в одну строку */
+.curtans-sort-with-calc {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.curtans-calc-btn {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: #b8860b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.curtans-calc-btn:hover {
+  filter: brightness(1.06);
+}
+
+.curtans-calc-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.curtans-calc-btn__icon {
+  font-size: 1.1em;
+  line-height: 1;
+}

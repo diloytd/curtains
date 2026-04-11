@@ -1,0 +1,9 @@
+
+; /* Start:"a:4:{s:4:"full";s:95:"/local/templates/aspro_max_grch/components/bitrix/subscribe.edit/footer/script.js?1728998067113";s:6:"source";s:81:"/local/templates/aspro_max_grch/components/bitrix/subscribe.edit/footer/script.js";s:3:"min";s:0:"";s:3:"map";s:0:"";}"*/
+$(document).ready(function(){
+	$("form.subscribe-form").validate({
+		rules:{ "EMAIL": {email: true} }
+	});
+})
+/* End */
+;; /* /local/templates/aspro_max_grch/components/bitrix/subscribe.edit/footer/script.js?1728998067113*/

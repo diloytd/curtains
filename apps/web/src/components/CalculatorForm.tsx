@@ -192,7 +192,8 @@ export function CalculatorForm({ onAddToCart }: CalculatorFormProps) {
           gap: 0.5,
           width: "100%",
           flex: { lg: 1 },
-          minHeight: { lg: 0 },
+          /* иначе в узком контейнере (модалка) колонка схлопывается и чертёж с height:0 */
+          minHeight: { lg: 400 },
         }}
       >
         <Typography variant="caption" component="h2" sx={{ flexShrink: 0, fontWeight: 600, display: "block" }}>
@@ -202,9 +203,9 @@ export function CalculatorForm({ onAddToCart }: CalculatorFormProps) {
           sx={{
             width: "100%",
             minWidth: 0,
-            /* Мобилка/узкий: больше места под схему и эскиз */
-            minHeight: { xs: 360, lg: 0 },
-            height: { xs: "min(62vh, 620px)", lg: "auto" },
+            /* Мобилка/узкий: больше места под схему и эскиз; на lg без minHeight absolute-контейнер CurtainDrawing получает 0px */
+            minHeight: { xs: 360, lg: 400 },
+            height: { xs: "min(62vh, 620px)", lg: "min(52vh, 560px)" },
             flex: { lg: 1 },
             position: "relative",
             overflow: "hidden",
