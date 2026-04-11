@@ -65,11 +65,28 @@ function formatRub(n: number) {
   }).format(n);
 }
 
+/** Масштаб блока «Чертёж»: одно число или раздельно для экранов до lg и от lg (в теме MUI lg = 1200px). */
+export type DrawingAreaScaleProp =
+  | number
+  | {
+      xs?: number;
+      lg?: number;
+    };
+
+const resolveDrawingScale = (scale: DrawingAreaScaleProp, tier: "xs" | "lg"): number => {
+  if (typeof scale === "number") return scale;
+  if (tier === "xs") return scale.xs ?? 1;
+  return scale.lg ?? scale.xs ?? 1;
+};
+
 export interface CalculatorFormProps {
   onAddToCart: (item: Omit<CartItem, "id">) => void;
+  drawingAreaScale?: DrawingAreaScaleProp;
 }
 
-export function CalculatorForm({ onAddToCart }: CalculatorFormProps) {
+export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: CalculatorFormProps) {
+  const sXs = resolveDrawingScale(drawingAreaScale, "xs");
+  const sLg = resolveDrawingScale(drawingAreaScale, "lg");
   const [width, setWidth] = useState(2);
   const [height, setHeight] = useState(2.5);
   const [foldRatio, setFoldRatio] = useState(2);
@@ -193,7 +210,7 @@ export function CalculatorForm({ onAddToCart }: CalculatorFormProps) {
           width: "100%",
           flex: { lg: 1 },
           /* иначе в узком контейнере (модалка) колонка схлопывается и чертёж с height:0 */
-          minHeight: { lg: 400 },
+          minHeight: { lg: 400 * sLg },
         }}
       >
         <Typography variant="caption" component="h2" sx={{ flexShrink: 0, fontWeight: 600, display: "block" }}>
@@ -204,8 +221,12 @@ export function CalculatorForm({ onAddToCart }: CalculatorFormProps) {
             width: "100%",
             minWidth: 0,
             /* Мобилка/узкий: больше места под схему и эскиз; на lg без minHeight absolute-контейнер CurtainDrawing получает 0px */
-            minHeight: { xs: 360, lg: 400 },
-            height: { xs: "min(62vh, 620px)", lg: "min(52vh, 560px)" },
+            minHeight: { xs: 360 * sXs, lg: 400 * sLg },
+            /* С lg (1200px) — чуть выше по vh/px, плюс отдельный множитель sLg */
+            height: {
+              xs: `min(${62 * sXs}vh, ${620 * sXs}px)`,
+              lg: `min(${56 * sLg}vh, ${650 * sLg}px)`,
+            },
             flex: { lg: 1 },
             position: "relative",
             overflow: "hidden",

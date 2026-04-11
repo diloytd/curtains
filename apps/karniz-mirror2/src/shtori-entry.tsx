@@ -95,7 +95,7 @@ const CalculatorModalHost = () => {
       <Dialog
         open={open}
         onClose={handleClose}
-        maxWidth="md"
+        maxWidth={false}
         fullWidth
         scroll="paper"
         disableScrollLock={false}
@@ -107,8 +107,11 @@ const CalculatorModalHost = () => {
           paper: {
             sx: {
               position: "fixed",
-              maxHeight: "min(92vh, 900px)",
               m: 2,
+              /* до lg — как раньше (~md 900px); с lg — +25% ширина/высота окна */
+              width: { xs: "calc(100% - 32px)", lg: "min(96vw, 1125px)" },
+              maxWidth: { xs: 900, lg: 1125 },
+              maxHeight: { xs: "min(92vh, 900px)", lg: "min(92vh, 1125px)" },
             },
           },
         }}
@@ -154,14 +157,24 @@ const CalculatorModalHost = () => {
             direction={{ xs: "column", md: "row" }}
             spacing={2}
             alignItems="stretch"
-            sx={{ width: "100%", minHeight: 0 }}
+            sx={{
+              width: "100%",
+              minHeight: 0,
+              /* с 1200px (lg) контентный ряд шире/выше пропорционально окну */
+              lg: {
+                minHeight: "min(68vh, 880px)",
+              },
+            }}
           >
             <Box sx={{ flex: "1 1 auto", minWidth: 0 }}>
-              <CalculatorForm onAddToCart={handleAddToCart} />
+              <CalculatorForm
+                onAddToCart={handleAddToCart}
+                drawingAreaScale={{ xs: 1.2, lg: 1.3 }}
+              />
             </Box>
             <Box
               sx={{
-                flex: { md: "0 0 360px" },
+                flex: { md: "0 0 360px", lg: "0 0 450px" },
                 width: { xs: "100%", md: "auto" },
                 minWidth: 0,
               }}

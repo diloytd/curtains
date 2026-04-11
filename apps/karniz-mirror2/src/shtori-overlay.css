@@ -39,3 +39,25 @@
   font-size: 1.1em;
   line-height: 1;
 }
+
+/* MUI Dialog paper scroll container (хеш класса может смениться после пересборки) */
+.css-1bbyjbt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  justify-content: flex-start;
+}
