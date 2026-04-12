@@ -31,17 +31,6 @@ export default function App() {
             minHeight: "100%",
             maxWidth: "100%",
           },
-          /* lg+: один экран без прокрутки страницы; до lg — вертикальный скролл страницы разрешён */
-          "@media screen and (min-width: 1200px)": {
-            "html, body": {
-              height: "100%",
-              overflow: "hidden",
-            },
-            "#root": {
-              height: "100%",
-              overflow: "visible",
-            },
-          },
           "@media print": {
             "html, body": { overflow: "visible", height: "auto" },
             "#root": { height: "auto", overflow: "visible" },
@@ -52,12 +41,8 @@ export default function App() {
       <Box
         sx={{
           minHeight: "100dvh",
-          height: { lg: "100dvh" },
-          maxHeight: { lg: "100dvh" },
           display: "flex",
           flexDirection: "column",
-          /* visible, иначе вместе с Container/Stack обрезаются подписи полей на lg */
-          overflow: { lg: "visible" },
         }}
       >
         <Container
@@ -65,38 +50,23 @@ export default function App() {
           sx={{
             py: 2,
             px: { xs: 2, sm: 3 },
-            flex: { lg: 1 },
-            minHeight: { lg: 0 },
             width: "100%",
             maxWidth: "100%",
             boxSizing: "border-box",
             display: "flex",
             flexDirection: "column",
-            overflow: { lg: "visible" },
           }}
         >
           <Typography variant="h5" component="h1" className="no-print" sx={{ mb: 1, flexShrink: 0 }}>
             Калькулятор штор
           </Typography>
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2}
-            alignItems="stretch"
-            sx={{
-              flex: { lg: 1 },
-              minHeight: { lg: 0 },
-              /* не hidden — иначе обрезаются плавающие подписи Outlined у полей */
-              overflow: { lg: "visible" },
-            }}
-          >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems="stretch">
             <Box
               sx={{
                 flex: 1,
                 minWidth: 0,
-                minHeight: { lg: 0 },
                 display: "flex",
                 flexDirection: "column",
-                overflow: { lg: "visible" },
               }}
               className="no-print"
             >
@@ -106,8 +76,6 @@ export default function App() {
               sx={{
                 width: { xs: "100%", md: 360 },
                 flexShrink: 0,
-                minHeight: { lg: 0 },
-                maxHeight: { lg: "100%" },
                 overflow: "auto",
               }}
             >
