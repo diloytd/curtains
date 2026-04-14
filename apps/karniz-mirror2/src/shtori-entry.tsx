@@ -1,3 +1,5 @@
+import "./block-external-links";
+
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import Dialog from "@mui/material/Dialog";
