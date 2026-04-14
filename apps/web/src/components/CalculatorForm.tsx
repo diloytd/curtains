@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Collapse,
   FormControlLabel,
   FormControl,
   InputLabel,
@@ -78,6 +79,22 @@ const FABRIC_OPTIONS: Array<{ value: FabricType; label: string; pricePerM2: numb
 const TAPE_PRICE = 600;
 const LABOR_PRICE = 8000;
 
+const toggleButtonSx = {
+  borderRadius: "8px",
+  py: 1,
+  px: 2,
+  minHeight: 0,
+  textTransform: "none" as const,
+  fontSize: "0.875rem",
+} as const;
+
+const collapsibleInnerSx = (open: boolean) => ({
+  width: "100%",
+  opacity: open ? 1 : 0,
+  transform: open ? "translateY(0)" : "translateY(10px)",
+  transition: "opacity 0.3s ease, transform 0.3s ease",
+});
+
 function formatRub(n: number) {
   return new Intl.NumberFormat("ru-RU", {
     style: "currency",
@@ -115,6 +132,8 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
   const [fabricType, setFabricType] = useState<FabricType>("cotton");
   const [withTape, setWithTape] = useState(true);
   const [withLabor, setWithLabor] = useState(true);
+  const [showEstimate, setShowEstimate] = useState(false);
+  const [showDrawing, setShowDrawing] = useState(false);
 
   const costs = useMemo(() => {
     const selectedFabric = FABRIC_OPTIONS.find((fabric) => fabric.value === fabricType) ?? FABRIC_OPTIONS[0];
@@ -147,6 +166,14 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
     withLabor,
     withTape,
   ]);
+
+  const handleToggleEstimate = () => {
+    setShowEstimate((previous) => !previous);
+  };
+
+  const handleToggleDrawing = () => {
+    setShowDrawing((previous) => !previous);
+  };
 
   const handleAdd = () => {
     onAddToCart({
@@ -267,88 +294,123 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
           />
         </Stack>
 
-        <Typography variant="caption" component="h2" sx={{ mt: 0.75, mb: 0.125, fontWeight: 600, display: "block" }}>
-          Смета
-        </Typography>
-        <TableContainer
-          sx={{
-            width: "100%",
-            maxWidth: "100%",
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 2,
-            overflow: "hidden",
-            boxSizing: "border-box",
-          }}
-        >
-          <Table size="small" sx={{ width: "100%", tableLayout: "fixed" }} aria-label="Смета">
-            <TableHead>
-              <TableRow
-                sx={{
-                  bgcolor: "grey.200",
-                  "& th": {
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
-                    py: 0.75,
-                    px: 1,
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    color: "text.primary",
-                  },
-                }}
-              >
-                <TableCell component="th" scope="col">
-                  Наименование
-                </TableCell>
-                <TableCell component="th" scope="col" align="center" sx={{ width: "28%" }}>
-                  Количество
-                </TableCell>
-                <TableCell component="th" scope="col" align="right" sx={{ width: "32%" }}>
-                  Стоимость
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {estimateRows.map((row, index) => (
-                <TableRow
-                  key={row.name}
-                  sx={{
-                    bgcolor: index % 2 === 0 ? "grey.50" : "background.paper",
-                    "& td": {
-                      fontSize: "0.75rem",
-                      py: 0.65,
-                      px: 1,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      verticalAlign: "middle",
-                    },
-                  }}
-                >
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell align="center">{row.qty}</TableCell>
-                  <TableCell align="right">{formatRub(row.cost)}</TableCell>
-                </TableRow>
-              ))}
-              <TableRow
-                sx={{
-                  bgcolor: "grey.200",
-                  "& td": {
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
-                    py: 0.75,
-                    px: 1,
-                    borderTop: "2px solid",
-                    borderColor: "divider",
-                  },
-                }}
-              >
-                <TableCell>ИТОГО:</TableCell>
-                <TableCell />
-                <TableCell align="right">{formatRub(costs.total)}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mt: 0.75 }}>
+          <Button
+            type="button"
+            variant={showEstimate ? "contained" : "outlined"}
+            color="primary"
+            onClick={handleToggleEstimate}
+            aria-expanded={showEstimate}
+            sx={{
+              ...toggleButtonSx,
+              textDecoration: showEstimate ? "underline" : "none",
+              textUnderlineOffset: 3,
+            }}
+          >
+            Смета
+          </Button>
+          <Button
+            type="button"
+            variant={showDrawing ? "contained" : "outlined"}
+            color="primary"
+            onClick={handleToggleDrawing}
+            aria-expanded={showDrawing}
+            sx={{
+              ...toggleButtonSx,
+              textDecoration: showDrawing ? "underline" : "none",
+              textUnderlineOffset: 3,
+            }}
+          >
+            Чертёж
+          </Button>
+        </Stack>
+
+        <Collapse in={showEstimate} timeout={300} collapsedSize={0} sx={{ width: "100%" }}>
+          <Box sx={collapsibleInnerSx(showEstimate)}>
+            <Typography variant="caption" component="h2" sx={{ mt: 0.25, mb: 0.125, fontWeight: 600, display: "block" }}>
+              Смета
+            </Typography>
+            <TableContainer
+              sx={{
+                width: "100%",
+                maxWidth: "100%",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+                overflow: "hidden",
+                boxSizing: "border-box",
+              }}
+            >
+              <Table size="small" sx={{ width: "100%", tableLayout: "fixed" }} aria-label="Смета">
+                <TableHead>
+                  <TableRow
+                    sx={{
+                      bgcolor: "grey.200",
+                      "& th": {
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        py: 0.75,
+                        px: 1,
+                        borderBottom: "1px solid",
+                        borderColor: "divider",
+                        color: "text.primary",
+                      },
+                    }}
+                  >
+                    <TableCell component="th" scope="col">
+                      Наименование
+                    </TableCell>
+                    <TableCell component="th" scope="col" align="center" sx={{ width: "28%" }}>
+                      Количество
+                    </TableCell>
+                    <TableCell component="th" scope="col" align="right" sx={{ width: "32%" }}>
+                      Стоимость
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {estimateRows.map((row, index) => (
+                    <TableRow
+                      key={row.name}
+                      sx={{
+                        bgcolor: index % 2 === 0 ? "grey.50" : "background.paper",
+                        "& td": {
+                          fontSize: "0.75rem",
+                          py: 0.65,
+                          px: 1,
+                          borderBottom: "1px solid",
+                          borderColor: "divider",
+                          verticalAlign: "middle",
+                        },
+                      }}
+                    >
+                      <TableCell>{row.name}</TableCell>
+                      <TableCell align="center">{row.qty}</TableCell>
+                      <TableCell align="right">{formatRub(row.cost)}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow
+                    sx={{
+                      bgcolor: "grey.200",
+                      "& td": {
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                        py: 0.75,
+                        px: 1,
+                        borderTop: "2px solid",
+                        borderColor: "divider",
+                      },
+                    }}
+                  >
+                    <TableCell>ИТОГО:</TableCell>
+                    <TableCell />
+                    <TableCell align="right">{formatRub(costs.total)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Collapse>
 
         <Button variant="contained" color="primary" onClick={handleAdd} size="small" sx={{ mt: 0.75, py: 0.25, px: 1.25, fontSize: "0.75rem", minHeight: 32 }}>
           В корзину
@@ -361,37 +423,38 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
           flexDirection: "column",
           gap: 0.5,
           width: "100%",
-          flex: { lg: 1 },
-          /* иначе в узком контейнере (модалка) колонка схлопывается и чертёж с height:0 */
-          minHeight: { lg: 400 * sLg },
+          flex: showDrawing ? { lg: 1 } : "0 0 auto",
+          minHeight: 0,
         }}
       >
-        <Typography variant="caption" component="h2" sx={{ flexShrink: 0, fontWeight: 600, display: "block" }}>
-          Чертёж
-        </Typography>
-        <Box
-          sx={{
-            width: "100%",
-            minWidth: 0,
-            /* Мобилка/узкий: больше места под схему и эскиз; на lg без minHeight absolute-контейнер CurtainDrawing получает 0px */
-            minHeight: { xs: 360 * sXs, lg: 400 * sLg },
-            /* С lg (1200px) — чуть выше по vh/px, плюс отдельный множитель sLg */
-            height: {
-              xs: `min(${62 * sXs}vh, ${620 * sXs}px)`,
-              lg: `min(${56 * sLg}vh, ${650 * sLg}px)`,
-            },
-            flex: { lg: 1 },
-            position: "relative",
-            overflow: "hidden",
-          }}
-        >
-          <CurtainDrawing
-            width={width}
-            height={height}
-            foldRatio={foldRatio}
-            curtainType={curtainType}
-          />
-        </Box>
+        <Collapse in={showDrawing} timeout={300} collapsedSize={0} sx={{ width: "100%", flex: showDrawing ? { lg: 1 } : "none", minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <Box sx={{ ...collapsibleInnerSx(showDrawing), display: "flex", flexDirection: "column", flex: { lg: 1 }, minHeight: 0 }}>
+            <Typography variant="caption" component="h2" sx={{ flexShrink: 0, fontWeight: 600, display: "block" }}>
+              Чертёж
+            </Typography>
+            <Box
+              sx={{
+                width: "100%",
+                minWidth: 0,
+                minHeight: { xs: 360 * sXs, lg: 400 * sLg },
+                height: {
+                  xs: `min(${62 * sXs}vh, ${620 * sXs}px)`,
+                  lg: `min(${56 * sLg}vh, ${650 * sLg}px)`,
+                },
+                flex: { lg: 1 },
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <CurtainDrawing
+                width={width}
+                height={height}
+                foldRatio={foldRatio}
+                curtainType={curtainType}
+              />
+            </Box>
+          </Box>
+        </Collapse>
       </Box>
     </Stack>
   );

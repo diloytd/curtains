@@ -83,22 +83,6 @@ export default function App() {
             </Box>
           </Stack>
         </Container>
-        <Box
-          component="footer"
-          className="no-print"
-          sx={{
-            flexShrink: 0,
-            borderTop: 1,
-            borderColor: "divider",
-            bgcolor: "background.paper",
-          }}
-        >
-          <Container maxWidth="lg" sx={{ py: 0.5 }}>
-            <Typography variant="caption" color="text.secondary" component="p" sx={{ m: 0, lineHeight: 1.2 }}>
-              Калькулятор штор · {new Date().getFullYear()}
-            </Typography>
-          </Container>
-        </Box>
       </Box>
     </ThemeProvider>
   );
