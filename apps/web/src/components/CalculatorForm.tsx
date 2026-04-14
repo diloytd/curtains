@@ -1,17 +1,24 @@
 import {
   Box,
   Button,
+  Checkbox,
+  FormControlLabel,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   Slider,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
 import type { CartItem, CurtainType } from "@curtans/core";
-import { calculateCosts, PRICES } from "@curtans/core";
 import { useMemo, useState } from "react";
 import { CurtainDrawing } from "./CurtainDrawing";
 
@@ -57,6 +64,20 @@ const CURTAIN_LABELS: Record<CurtainType, string> = {
   roman: "Римские",
 };
 
+type FabricType = "cotton" | "canvas" | "linen-look" | "satin" | "printed" | "jacquard";
+
+const FABRIC_OPTIONS: Array<{ value: FabricType; label: string; pricePerM2: number }> = [
+  { value: "cotton", label: "Хлопок", pricePerM2: 900 },
+  { value: "canvas", label: "Канвас", pricePerM2: 1200 },
+  { value: "linen-look", label: "Под лен", pricePerM2: 1350 },
+  { value: "satin", label: "Атлас", pricePerM2: 1800 },
+  { value: "printed", label: "Ткани с принтами", pricePerM2: 1650 },
+  { value: "jacquard", label: "Жаккард", pricePerM2: 2200 },
+];
+
+const TAPE_PRICE = 600;
+const LABOR_PRICE = 8000;
+
 function formatRub(n: number) {
   return new Intl.NumberFormat("ru-RU", {
     style: "currency",
@@ -89,13 +110,43 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
   const sLg = resolveDrawingScale(drawingAreaScale, "lg");
   const [width, setWidth] = useState(2);
   const [height, setHeight] = useState(2.5);
-  const [foldRatio, setFoldRatio] = useState(2);
+  const [foldRatio, setFoldRatio] = useState(1.5);
   const [curtainType, setCurtainType] = useState<CurtainType>("straight");
+  const [fabricType, setFabricType] = useState<FabricType>("cotton");
+  const [withTape, setWithTape] = useState(true);
+  const [withLabor, setWithLabor] = useState(true);
 
-  const costs = useMemo(
-    () => calculateCosts(width, height, foldRatio, PRICES),
-    [width, height, foldRatio],
-  );
+  const costs = useMemo(() => {
+    const selectedFabric = FABRIC_OPTIONS.find((fabric) => fabric.value === fabricType) ?? FABRIC_OPTIONS[0];
+    const areaM2 = width * height * foldRatio;
+    const fabricCost = areaM2 * selectedFabric.pricePerM2;
+    const tapeCost = withTape ? TAPE_PRICE : 0;
+    const laborCost = withLabor ? LABOR_PRICE : 0;
+
+    return {
+      areaM2,
+      fabricCost,
+      tapeCost,
+      laborCost,
+      total: fabricCost + tapeCost + laborCost,
+    };
+  }, [fabricType, foldRatio, height, width, withLabor, withTape]);
+
+  const estimateRows = useMemo(() => {
+    const rows: Array<{ name: string; qty: string; cost: number }> = [
+      { name: "Ткань", qty: `${costs.areaM2.toFixed(2)} м²`, cost: costs.fabricCost },
+    ];
+    if (withTape) rows.push({ name: "Лента", qty: "1 шт", cost: costs.tapeCost });
+    if (withLabor) rows.push({ name: "Работа", qty: "1 шт", cost: costs.laborCost });
+    return rows;
+  }, [
+    costs.areaM2,
+    costs.fabricCost,
+    costs.laborCost,
+    costs.tapeCost,
+    withLabor,
+    withTape,
+  ]);
 
   const handleAdd = () => {
     onAddToCart({
@@ -156,7 +207,7 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
           <Slider
             size="small"
             sx={{ py: 0.25, "& .MuiSlider-thumb": { width: 14, height: 14 } }}
-            min={1.5}
+            min={1}
             max={3}
             step={0.1}
             value={foldRatio}
@@ -183,19 +234,121 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
             ))}
           </Select>
         </FormControl>
+        <FormControl
+          fullWidth
+          size="small"
+          sx={{ ...compactFieldSx, mt: 0.5, maxWidth: { xs: "100%", sm: 260 } }}
+        >
+          <InputLabel id="fabric-type-label">Вид ткани</InputLabel>
+          <Select
+            labelId="fabric-type-label"
+            label="Вид ткани"
+            value={fabricType}
+            onChange={(e) => setFabricType(e.target.value as FabricType)}
+          >
+            {FABRIC_OPTIONS.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label} ({formatRub(option.pricePerM2)}/м²)
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={0.25} sx={{ mt: 0.25 }}>
+          <FormControlLabel
+            control={<Checkbox size="small" checked={withTape} onChange={(e) => setWithTape(e.target.checked)} />}
+            label={`Лента (${formatRub(TAPE_PRICE)})`}
+            sx={{ mr: 1 }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox size="small" checked={withLabor} onChange={(e) => setWithLabor(e.target.checked)} />
+            }
+            label={`Работа (${formatRub(LABOR_PRICE)})`}
+          />
+        </Stack>
 
         <Typography variant="caption" component="h2" sx={{ mt: 0.75, mb: 0.125, fontWeight: 600, display: "block" }}>
           Смета
         </Typography>
-        <Typography variant="caption" component="div" sx={{ lineHeight: 1.4 }}>
-          Площадь ткани: {costs.areaM2.toFixed(2)} м² · Ткань · Лента · Работа
-        </Typography>
-        <Typography variant="caption" component="div" sx={{ lineHeight: 1.4 }}>
-          {formatRub(costs.fabricCost)} · {formatRub(costs.tapeCost)} · {formatRub(costs.laborCost)}
-        </Typography>
-        <Typography variant="body2" sx={{ fontWeight: 600, mt: 0.25 }}>
-          Итого: {formatRub(costs.total)}
-        </Typography>
+        <TableContainer
+          sx={{
+            width: "100%",
+            maxWidth: "100%",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+            overflow: "hidden",
+            boxSizing: "border-box",
+          }}
+        >
+          <Table size="small" sx={{ width: "100%", tableLayout: "fixed" }} aria-label="Смета">
+            <TableHead>
+              <TableRow
+                sx={{
+                  bgcolor: "grey.200",
+                  "& th": {
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                    py: 0.75,
+                    px: 1,
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    color: "text.primary",
+                  },
+                }}
+              >
+                <TableCell component="th" scope="col">
+                  Наименование
+                </TableCell>
+                <TableCell component="th" scope="col" align="center" sx={{ width: "28%" }}>
+                  Количество
+                </TableCell>
+                <TableCell component="th" scope="col" align="right" sx={{ width: "32%" }}>
+                  Стоимость
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {estimateRows.map((row, index) => (
+                <TableRow
+                  key={row.name}
+                  sx={{
+                    bgcolor: index % 2 === 0 ? "grey.50" : "background.paper",
+                    "& td": {
+                      fontSize: "0.75rem",
+                      py: 0.65,
+                      px: 1,
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
+                      verticalAlign: "middle",
+                    },
+                  }}
+                >
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell align="center">{row.qty}</TableCell>
+                  <TableCell align="right">{formatRub(row.cost)}</TableCell>
+                </TableRow>
+              ))}
+              <TableRow
+                sx={{
+                  bgcolor: "grey.200",
+                  "& td": {
+                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                    py: 0.75,
+                    px: 1,
+                    borderTop: "2px solid",
+                    borderColor: "divider",
+                  },
+                }}
+              >
+                <TableCell>ИТОГО:</TableCell>
+                <TableCell />
+                <TableCell align="right">{formatRub(costs.total)}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Button variant="contained" color="primary" onClick={handleAdd} size="small" sx={{ mt: 0.75, py: 0.25, px: 1.25, fontSize: "0.75rem", minHeight: 32 }}>
           В корзину

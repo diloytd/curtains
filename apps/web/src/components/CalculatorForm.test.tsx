@@ -1,4 +1,3 @@
-import { PRICES } from "@curtans/core";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -14,17 +13,17 @@ describe("CalculatorForm", () => {
 
     await user.click(screen.getByRole("button", { name: "В корзину" }));
 
-    // width=2, height=2.5, fold=2 → area=10, fabricWidth=4
-    const fabricCost = 10 * PRICES.fabricPerM2;
-    const tapeCost = 4 * PRICES.tapePerM;
-    const laborCost = 10 * PRICES.laborPerM2;
+    // width=2, height=2.5, fold=1.5, ткань=Хлопок(900), лента=600, работа=8000
+    const fabricCost = 2 * 2.5 * 1.5 * 900;
+    const tapeCost = 600;
+    const laborCost = 8000;
     const total = fabricCost + tapeCost + laborCost;
 
     expect(onAddToCart).toHaveBeenCalledTimes(1);
     expect(onAddToCart).toHaveBeenCalledWith({
       width: 2,
       height: 2.5,
-      foldRatio: 2,
+      foldRatio: 1.5,
       curtainType: "straight",
       fabricCost,
       tapeCost,
