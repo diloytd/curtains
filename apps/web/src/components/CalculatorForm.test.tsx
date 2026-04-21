@@ -20,15 +20,19 @@ describe("CalculatorForm", () => {
     const total = fabricCost + tapeCost + laborCost;
 
     expect(onAddToCart).toHaveBeenCalledTimes(1);
-    expect(onAddToCart).toHaveBeenCalledWith({
-      width: 2,
-      height: 2.5,
-      foldRatio: 1.5,
-      curtainType: "straight",
-      fabricCost,
-      tapeCost,
-      laborCost,
-      total,
-    });
+    expect(onAddToCart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        width: 2,
+        height: 2.5,
+        foldRatio: 1.5,
+        curtainType: "straight",
+        fabricLabel: "Хлопок",
+        curtainColorLabel: "Белый",
+        fabricCost,
+        tapeCost,
+        laborCost,
+        total,
+      }),
+    );
   });
 });

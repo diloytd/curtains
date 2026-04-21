@@ -20,8 +20,18 @@ import {
   Typography,
 } from "@mui/material";
 import type { CartItem, CurtainType } from "@curtans/core";
-import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CurtainDrawing } from "./CurtainDrawing";
+import {
+  FABRIC_OPTIONS,
+  CURTAIN_PALETTES,
+  getCurtainColorEntry,
+  getDefaultCurtainColorId,
+  type FabricType,
+} from "./curtain-fabric-colors";
+
+export type { FabricType } from "./curtain-fabric-colors";
 
 const compactFieldSx = {
   "& .MuiInputBase-root": {
@@ -64,17 +74,6 @@ const CURTAIN_LABELS: Record<CurtainType, string> = {
   pleated: "Со складками",
   roman: "Римские",
 };
-
-type FabricType = "cotton" | "canvas" | "linen-look" | "satin" | "printed" | "jacquard";
-
-const FABRIC_OPTIONS: Array<{ value: FabricType; label: string; pricePerM2: number }> = [
-  { value: "cotton", label: "Хлопок", pricePerM2: 900 },
-  { value: "canvas", label: "Канвас", pricePerM2: 1200 },
-  { value: "linen-look", label: "Под лен", pricePerM2: 1350 },
-  { value: "satin", label: "Атлас", pricePerM2: 1800 },
-  { value: "printed", label: "Ткани с принтами", pricePerM2: 1650 },
-  { value: "jacquard", label: "Жаккард", pricePerM2: 2200 },
-];
 
 const TAPE_PRICE = 600;
 const LABOR_PRICE = 8000;
@@ -120,9 +119,21 @@ const resolveDrawingScale = (scale: DrawingAreaScaleProp, tier: "xs" | "lg"): nu
 export interface CalculatorFormProps {
   onAddToCart: (item: Omit<CartItem, "id">) => void;
   drawingAreaScale?: DrawingAreaScaleProp;
+  /** Превью (например 3D) рядом с полями ширина / высота / сборка / ткань */
+  renderInlinePreview?: (params: {
+    width: number;
+    height: number;
+    foldRatio: number;
+    fabricType: FabricType;
+    curtainColorHex: string;
+  }) => ReactNode;
 }
 
-export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: CalculatorFormProps) {
+export function CalculatorForm({
+  onAddToCart,
+  drawingAreaScale = 1,
+  renderInlinePreview,
+}: CalculatorFormProps) {
   const sXs = resolveDrawingScale(drawingAreaScale, "xs");
   const sLg = resolveDrawingScale(drawingAreaScale, "lg");
   const [width, setWidth] = useState(2);
@@ -130,10 +141,20 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
   const [foldRatio, setFoldRatio] = useState(1.5);
   const [curtainType, setCurtainType] = useState<CurtainType>("straight");
   const [fabricType, setFabricType] = useState<FabricType>("cotton");
+  const [curtainColorId, setCurtainColorId] = useState(() => getDefaultCurtainColorId("cotton"));
   const [withTape, setWithTape] = useState(true);
   const [withLabor, setWithLabor] = useState(true);
   const [showEstimate, setShowEstimate] = useState(false);
   const [showDrawing, setShowDrawing] = useState(false);
+
+  useEffect(() => {
+    setCurtainColorId(getDefaultCurtainColorId(fabricType));
+  }, [fabricType]);
+
+  const selectedColor = useMemo(
+    () => getCurtainColorEntry(fabricType, curtainColorId),
+    [curtainColorId, fabricType],
+  );
 
   const costs = useMemo(() => {
     const selectedFabric = FABRIC_OPTIONS.find((fabric) => fabric.value === fabricType) ?? FABRIC_OPTIONS[0];
@@ -176,11 +197,14 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
   };
 
   const handleAdd = () => {
+    const fabricLabel = FABRIC_OPTIONS.find((f) => f.value === fabricType)?.label;
     onAddToCart({
       width,
       height,
       foldRatio,
       curtainType,
+      fabricLabel,
+      curtainColorLabel: selectedColor.label,
       fabricCost: costs.fabricCost,
       tapeCost: costs.tapeCost,
       laborCost: costs.laborCost,
@@ -200,52 +224,157 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
       }}
     >
       <Box sx={{ flexShrink: 0 }}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={0.75} useFlexGap flexWrap="wrap">
-          <TextField
-            label="Ширина карниза, м"
-            type="number"
-            inputProps={{ min: 0.1, step: 0.05 }}
-            value={width}
-            onChange={(e) => setWidth(Number(e.target.value))}
-            fullWidth
-            size="small"
-            sx={widthHeightFieldSx}
-          />
-          <TextField
-            label="Высота карниза, м"
-            type="number"
-            inputProps={{ min: 0.1, step: 0.05 }}
-            value={height}
-            onChange={(e) => setHeight(Number(e.target.value))}
-            fullWidth
-            size="small"
-            sx={widthHeightFieldSx}
-          />
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1}
+          alignItems={{ xs: "stretch", md: "flex-start" }}
+          sx={{ width: "100%" }}
+        >
+          <Stack spacing={0.75} sx={{ flex: 1, minWidth: 0 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={0.75} useFlexGap flexWrap="wrap">
+              <TextField
+                label="Ширина карниза, м"
+                type="number"
+                inputProps={{ min: 1, max: 3, step: 0.05 }}
+                value={width}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isNaN(n)) return;
+                  setWidth(Math.min(3, Math.max(1, n)));
+                }}
+                fullWidth
+                size="small"
+                sx={widthHeightFieldSx}
+              />
+              <TextField
+                label="Высота карниза, м"
+                type="number"
+                inputProps={{ min: 1.5, max: 3, step: 0.05 }}
+                value={height}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  if (Number.isNaN(n)) return;
+                  setHeight(Math.min(3, Math.max(1.5, n)));
+                }}
+                fullWidth
+                size="small"
+                sx={widthHeightFieldSx}
+              />
+            </Stack>
+            <Box sx={{ mt: 0.25, width: "100%", maxWidth: { xs: "100%", sm: 560 } }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+                sx={{ mb: 0, fontSize: "0.7rem", maxWidth: "100%" }}
+              >
+                Коэффициент сборки: {foldRatio.toFixed(1)}
+              </Typography>
+              <Slider
+                size="small"
+                sx={{ py: 0.25, "& .MuiSlider-thumb": { width: 14, height: 14 } }}
+                min={1}
+                max={3}
+                step={0.1}
+                value={foldRatio}
+                onChange={(_, v) => setFoldRatio(v as number)}
+                valueLabelDisplay="auto"
+              />
+            </Box>
+            <FormControl
+              fullWidth
+              size="small"
+              sx={{ ...compactFieldSx, mt: 0.5, maxWidth: { xs: "100%", sm: 280 } }}
+            >
+              <InputLabel id="fabric-type-label">Вид ткани</InputLabel>
+              <Select
+                labelId="fabric-type-label"
+                label="Вид ткани"
+                value={fabricType}
+                onChange={(e) => setFabricType(e.target.value as FabricType)}
+              >
+                {FABRIC_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label} ({formatRub(option.pricePerM2)}/м²)
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl
+              fullWidth
+              size="small"
+              sx={{ ...compactFieldSx, mt: 0.5, maxWidth: { xs: "100%", sm: 280 } }}
+            >
+              <InputLabel id="curtain-color-label">Цвет штор</InputLabel>
+              <Select
+                labelId="curtain-color-label"
+                label="Цвет штор"
+                value={curtainColorId}
+                onChange={(e) => setCurtainColorId(e.target.value)}
+                renderValue={(id) => {
+                  const row = getCurtainColorEntry(fabricType, id as string);
+                  return (
+                    <Stack direction="row" spacing={1} alignItems="center" component="span">
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 14,
+                          height: 14,
+                          borderRadius: "2px",
+                          border: "1px solid",
+                          borderColor: "divider",
+                          bgcolor: row.hex,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span>{row.label}</span>
+                    </Stack>
+                  );
+                }}
+              >
+                {CURTAIN_PALETTES[fabricType].map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Box
+                        sx={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: "2px",
+                          border: "1px solid",
+                          borderColor: "divider",
+                          bgcolor: c.hex,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span>{c.label}</span>
+                    </Stack>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+          {renderInlinePreview ? (
+            <Box
+              sx={{
+                flexShrink: 0,
+                alignSelf: { xs: "center", md: "flex-start" },
+                width: { xs: "100%", md: "auto" },
+              }}
+            >
+              {renderInlinePreview({
+                width,
+                height,
+                foldRatio,
+                fabricType,
+                curtainColorHex: selectedColor.hex,
+              })}
+            </Box>
+          ) : null}
         </Stack>
-        <Box sx={{ mt: 0.25, width: "100%", maxWidth: { xs: "100%", sm: 560 } }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            display="block"
-            sx={{ mb: 0, fontSize: "0.7rem", maxWidth: "100%" }}
-          >
-            Коэффициент сборки: {foldRatio.toFixed(1)}
-          </Typography>
-          <Slider
-            size="small"
-            sx={{ py: 0.25, "& .MuiSlider-thumb": { width: 14, height: 14 } }}
-            min={1}
-            max={3}
-            step={0.1}
-            value={foldRatio}
-            onChange={(_, v) => setFoldRatio(v as number)}
-            valueLabelDisplay="auto"
-          />
-        </Box>
         <FormControl
           fullWidth
           size="small"
-          sx={{ ...compactFieldSx, mt: 0.25, maxWidth: { xs: "100%", sm: 220 } }}
+          sx={{ ...compactFieldSx, mt: 0.75, maxWidth: { xs: "100%", sm: 220 } }}
         >
           <InputLabel id="curtain-type-label">Тип штор</InputLabel>
           <Select
@@ -257,25 +386,6 @@ export function CalculatorForm({ onAddToCart, drawingAreaScale = 1 }: Calculator
             {(Object.keys(CURTAIN_LABELS) as CurtainType[]).map((key) => (
               <MenuItem key={key} value={key}>
                 {CURTAIN_LABELS[key]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl
-          fullWidth
-          size="small"
-          sx={{ ...compactFieldSx, mt: 0.5, maxWidth: { xs: "100%", sm: 260 } }}
-        >
-          <InputLabel id="fabric-type-label">Вид ткани</InputLabel>
-          <Select
-            labelId="fabric-type-label"
-            label="Вид ткани"
-            value={fabricType}
-            onChange={(e) => setFabricType(e.target.value as FabricType)}
-          >
-            {FABRIC_OPTIONS.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label} ({formatRub(option.pricePerM2)}/м²)
               </MenuItem>
             ))}
           </Select>

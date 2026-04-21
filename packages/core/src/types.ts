@@ -6,6 +6,10 @@ export interface CartItem {
   height: number;
   foldRatio: number;
   curtainType: CurtainType;
+  /** Подпись вида ткани из калькулятора (опционально) */
+  fabricLabel?: string;
+  /** Выбранный цвет штор (опционально) */
+  curtainColorLabel?: string;
   fabricCost: number;
   tapeCost: number;
   laborCost: number;

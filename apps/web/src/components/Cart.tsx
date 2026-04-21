@@ -55,6 +55,7 @@ export function Cart({ items, onRemove }: CartProps) {
                 <TableHead>
                   <TableRow>
                     <TableCell>Размеры, м</TableCell>
+                    <TableCell>Ткань, цвет</TableCell>
                     <TableCell>Тип</TableCell>
                     <TableCell align="right">Сумма</TableCell>
                     <TableCell align="right" width={72} />
@@ -65,6 +66,11 @@ export function Cart({ items, onRemove }: CartProps) {
                     <TableRow key={row.id}>
                       <TableCell>
                         {row.width} × {row.height}, k={row.foldRatio.toFixed(1)}
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 160 }}>
+                        {row.fabricLabel || row.curtainColorLabel
+                          ? [row.fabricLabel, row.curtainColorLabel].filter(Boolean).join(" · ")
+                          : "—"}
                       </TableCell>
                       <TableCell>{TYPE_LABELS[row.curtainType]}</TableCell>
                       <TableCell align="right">{formatRub(row.total)}</TableCell>
